@@ -34,7 +34,22 @@
                         :person/last-name  "Austen"
                         :person/email      "jane.austen@foobar.com"
                         :person/telephone  "123456"
-                        :person/gender     "F"}]
+                        :person/gender     "F"}
+                       {:person/first-name "William"
+                        :person/last-name  "Yeats"
+                        :person/email      "w.b.yeats@foobar.com"
+                        :person/telephone  "1234567"
+                        :person/gender     "M"}
+                       {:person/first-name "William"
+                        :person/last-name  "Shakespeare"
+                        :person/email      "shakespeare@foobar.com"
+                        :person/telephone  "12345678"`
+                        :person/gender     "M"}
+                       {:person/first-name "Thomas"
+                        :person/last-name  "Elliot"
+                        :person/email      "t.s.elliot@foobar.com"
+                        :person/telephone  "12345678"
+                        :person/gender     "M"}]
         app-state     (reagent/atom {:window-dimension {:width  (. js/window -innerWidth)
                                                         :height (. js/window -innerHeight)}
                                      :search-fn (fn [txt]
