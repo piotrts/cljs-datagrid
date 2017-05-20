@@ -133,14 +133,14 @@
 
 (defn calculate-column-header-z-index [grid-state column-kw]
   (- (if (sticky-column? grid-state column-kw)
-       2
-       1)
+       20000
+       10000)
      (get-column-idx grid-state column-kw)))
 
 (defn calculate-record-z-index [grid-state column-kw]
   (- (if (sticky-column? grid-state column-kw)
-       2
-       1)
+       20000
+       10000)
      (get-column-idx grid-state column-kw)))
 
 (defn- column-header-style [grid-state column-kw column-config]
@@ -501,7 +501,7 @@
                      :border           "1px solid grey"
                      :padding          5
                      :position         :absolute
-                     :z-index          3
+                     :z-index          30000
                      :left             (first coordinate)
                      :top              (second coordinate)}}
        content])))
