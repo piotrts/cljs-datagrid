@@ -10,6 +10,7 @@
 (defonce common-column-style {:display :table-cell
                               :padding 0
                               :border  "1px solid #d9d9d9"})
+
 (defn get-column-config [grid-state column-kw]
   (->> @grid-state :columns-config (filter #(= (first %) column-kw)) first second))
 
@@ -131,17 +132,10 @@
                      i))
                  (:columns-config @grid-state))))
 
-(defn calculate-column-header-z-index [grid-state column-kw]
-  (- (if (sticky-column? grid-state column-kw)
-       2
-       1)
-     (get-column-idx grid-state column-kw)))
-
-(defn calculate-record-z-index [grid-state column-kw]
-  (- (if (sticky-column? grid-state column-kw)
-       2
-       1)
-     (get-column-idx grid-state column-kw)))
+(defn calculate-column-z-index [grid-state column-kw]
+  (if (sticky-column? grid-state column-kw)
+    2
+    1))
 
 (defn- column-header-style [grid-state column-kw column-config]
   (let [column-width (get-column-width column-kw grid-state)]
@@ -154,7 +148,7 @@
       :width         column-width
       :min-width     column-width
       :max-width     column-width
-      :z-index       (calculate-column-header-z-index grid-state column-kw)
+      :z-index       (calculate-column-z-index grid-state column-kw)
       :position      :relative}
      (when (sticky-column? grid-state column-kw)
        {:background-color :gray})
@@ -174,7 +168,7 @@
       :max-width        column-width
       :position         :relative
       :background-color "#fff"
-      :z-index          (calculate-record-z-index grid-state column-kw)}
+      :z-index          (calculate-column-z-index grid-state column-kw)}
      (when (sticky-column? grid-state column-kw)
        {:background-color "#f6f6f6"})
      (when (not= 0 (:left-margin column-config))
