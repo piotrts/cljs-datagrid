@@ -112,7 +112,7 @@
                (calculate-left-margins grid-state scroll-left))))
 
 (defn sticky-columns-refresh [grid-state]
-  (let [scroll-left (.-x (gdom/getDocumentScroll))]
+  (let [scroll-left (-> @grid-state :main-element .-scrollLeft)]
     (tily/set-atom! grid-state [:scroll-left] scroll-left)
     (update-left-margins grid-state scroll-left)))
 
@@ -133,14 +133,14 @@
 
 (defn calculate-column-header-z-index [grid-state column-kw]
   (- (if (sticky-column? grid-state column-kw)
-       20000
-       10000)
+       2
+       1)
      (get-column-idx grid-state column-kw)))
 
 (defn calculate-record-z-index [grid-state column-kw]
   (- (if (sticky-column? grid-state column-kw)
-       20000
-       10000)
+       2
+       1)
      (get-column-idx grid-state column-kw)))
 
 (defn- column-header-style [grid-state column-kw column-config]
@@ -196,13 +196,15 @@
 (defn- number-buttons-foundation
   "Creates a div that is placed underneath number buttons"
   [grid-state]
-  [:div {:style {
-                 :top              0
-                 :left             0
-                 :z-index          1
-                 :background-color "#fff"
-                 :width            left-corner-block-width
-                 :height           "100%"}}])
+  [:div {:class "foundation"
+         :style (merge {:position :absolute
+                        :left 0
+                        :top 0
+                        :z-index          3
+                        :background-color "#fff"
+                        :width            left-corner-block-width}
+                       (when-let [main-element (-> @grid-state :main-element)]
+                         {:height  (.-clientHeight main-element)}))}])
 
 (defn- data-column-headers [grid-state]
   (doall (for [column-config (-> @grid-state :columns-config)
@@ -243,7 +245,6 @@
                   :on-click sort-column
                   :on-context-menu (fn [evt]
                                      (let [rect   (.. evt -target -parentNode -parentNode -parentNode -parentNode getBoundingClientRect)
-                                           _ (js/console.log rect)
                                            x      (- (. evt -clientX) 0)
                                            y      (+ (. evt -clientY) 0)
                                            x      (- x (. rect -left))
@@ -272,7 +273,7 @@
                                  :min-width left-corner-block-width
                                  :max-width left-corner-block-width
                                  :position  :relative
-                                 :z-index   1
+                                 :z-index   4
                                  :padding   0}
         left-corner-block       (or (:left-corner-block @grid-state)
                                     (fn [grid-state style]
@@ -399,7 +400,7 @@
                                                                  :width     left-corner-block-width
                                                                  :min-width left-corner-block-width
                                                                  :max-width left-corner-block-width
-                                                                 :z-index   2
+                                                                 :z-index   5
                                                                  :position :relative
                                                                  :padding   0
                                                                  :user-drag :element}
@@ -524,7 +525,6 @@
               :on-click #(swap! setting-visible? (fn [old-val] (not old-val)))} "settings"]
          (when @setting-visible?
            [:div {:style {:position :absolute
-                          :z-index 2
                           :top drop-down-top
                           :right 0
                           :padding 0
@@ -575,22 +575,25 @@
 
 (defn render [grid-state]
   (r/create-class {:component-will-mount   (fn [this-component]
-                                             (.addEventListener js/window "scroll" (fn [_]
-                                                                                     (sticky-columns-refresh grid-state)))
                                              (tily/set-atom! grid-state [:selected-rows] #{})
                                              (tily/set-atom! grid-state [:expanded-rows] #{})
                                              (tily/set-atom! grid-state [:sticky-columns] #{})
                                              (tily/set-atom! grid-state [:id] (str (rand-int 1000))))
+                   :component-did-mount    (fn [this]
+                                             (tily/set-atom! grid-state [:main-element] (r/dom-node this))
+                                             (.addEventListener (r/dom-node this)
+                                                                "scroll"
+                                                                (fn [_]
+                                                                  (sticky-columns-refresh grid-state))))
                    :reagent-render         (fn [grid-state]
-                                             [:div {:style {:width (get-content-width grid-state)}}
-                                              [:div {:style    {:margin-left (:scroll-left @grid-state)
-                                                                :overflow-x :hidden
-                                                                :max-width "100%"}
+                                             [:div {:style {:max-width "100%" :overflow :auto :z-index 10000}}
+                                              [:div {:style    {:width (get-content-width grid-state)
+                                                                :margin-left (:scroll-left @grid-state)}
                                                      :on-click #(when (-> @grid-state :context-menu :content)
                                                                   (tily/set-atom! grid-state [:context-menu :content] nil))}
-                                               (when (:search-fn @grid-state)
-                                                 [search-box grid-state])
+                                              ; (when (:search-fn @grid-state)
+                                              ;   [search-box grid-state])
                                                [context-menu grid-state]
-                                               [column-headers grid-state]
                                                [number-buttons-foundation grid-state]
+                                               [column-headers grid-state]
                                                [rows grid-state]]])}))
