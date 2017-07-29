@@ -1,5 +1,6 @@
 (ns com.kaicode.datagrid
-  (:require [com.kaicode.tily :as tily]
+  (:require [clojure.string :as str]
+            [com.kaicode.tily :as tily]
             [com.kaicode.teleport :as t]
             [reagent.core :as r]
             [cljsjs.hammer]))
@@ -78,6 +79,12 @@
                                           [:i {:class "material-icons"} "arrow_drop_up"])))
                      sort-column    (fn [evt]
                                       (let [sort-column (:sort-column @grid-state)
+                                            sort-keyfn  (or (:sort-keyfn config)
+                                                            (fn [row]
+                                                              (let [val (column-kw row)]
+                                                                (if (or (string? val) (keyword? val))
+                                                                  (str/lower-case (str val))
+                                                                  val))))
                                             rows        (:rows @grid-state)]
                                         (swap! grid-state (fn [grid-state]
                                                             (let [comparator (cond
@@ -90,12 +97,7 @@
                                                                   (update-in [:sort-column] (fn [sc]
                                                                                               (let [val (column-kw sc)]
                                                                                                 {column-kw (not val)})))
-                                                                  (assoc :rows (vec (sort-by
-                                                                                     #(-> % column-kw
-                                                                                          (or "") str
-                                                                                          clojure.string/lower-case)
-                                                                                     comparator
-                                                                                     rows)))))))))]
+                                                                  (assoc :rows (->> rows (sort-by sort-keyfn comparator) vec))))))))]
                :when (:visible? config)]
            [:div {:key      (tily/format "grid-%s-%s-header" (:id @grid-state) column-kw)
                   :class    "mdl-button mdl-js-button mdl-js-button mdl-button--raised"
