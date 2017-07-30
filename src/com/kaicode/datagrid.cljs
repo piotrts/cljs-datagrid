@@ -585,8 +585,8 @@
                                                                 :margin-left (:scroll-left @grid-state)}
                                                      :on-click #(when (-> @grid-state :context-menu :content)
                                                                   (tily/set-atom! grid-state [:context-menu :content] nil))}
-                                              ; (when (:search-fn @grid-state)
-                                              ;   [search-box grid-state])
+                                               (when (:search-fn @grid-state)
+                                                 [search-box grid-state])
                                                [context-menu grid-state]
                                                [number-buttons-foundation grid-state]
                                                [column-headers grid-state]
