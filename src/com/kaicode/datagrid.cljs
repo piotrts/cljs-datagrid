@@ -475,7 +475,7 @@
                              (row-data row)]))]
     [:div {:id    (tily/format "grid-%s-rows" id)
            :class "grid-rows"
-           :style {:display    :block
+           :style {:display    :table
                    :height     total-height
                    :width      (- total-width (:scroll-left @grid-state))
                    :overflow-y :auto
