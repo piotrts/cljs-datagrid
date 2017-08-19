@@ -147,9 +147,6 @@
     (merge
      common-column-style
      {:display       :table-cell
-      :overflow      :hidden
-      :white-space   :nowrap
-      :text-overflow :ellipsis
       :width         column-width
       :min-width     column-width
       :max-width     column-width
@@ -165,9 +162,6 @@
     (merge
      common-column-style
      {:display          :table-cell
-      :overflow         :hidden
-      :white-space      :nowrap
-      :text-overflow    :ellipsis
       :width            column-width
       :min-width        column-width
       :max-width        column-width
