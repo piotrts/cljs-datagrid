@@ -134,6 +134,11 @@
 
 (defn calculate-column-z-index [grid-state column-kw]
   (if (sticky-column? grid-state column-kw)
+    3
+    4))
+
+(defn calculate-record-z-index [grid-state column-kw]
+  (if (sticky-column? grid-state column-kw)
     2
     1))
 
@@ -166,9 +171,9 @@
       :width            column-width
       :min-width        column-width
       :max-width        column-width
-      :position         :relative
       :background-color "#fff"
-      :z-index          (calculate-column-z-index grid-state column-kw)}
+      :z-index          (calculate-record-z-index grid-state column-kw)
+      :position         :relative}
      (when (sticky-column? grid-state column-kw)
        {:background-color "#f6f6f6"})
      (when (not= 0 (:left-margin column-config))
