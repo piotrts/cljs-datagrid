@@ -137,7 +137,7 @@
     3
     4))
 
-(defn calculate-record-z-index [grid-state column-kw]
+(defn calculate-row-z-index [grid-state column-kw]
   (if (sticky-column? grid-state column-kw)
     2
     1))
@@ -157,7 +157,7 @@
      (when (not= 0 (:left-margin column-config))
        {:left (:left-margin column-config)}))))
 
-(defn- record-style [grid-state column-kw column-config]
+(defn- row-style [grid-state column-kw column-config]
   (let [column-width (get-column-width column-kw grid-state)]
     (merge
      common-column-style
@@ -166,7 +166,7 @@
       :min-width        column-width
       :max-width        column-width
       :background-color "#fff"
-      :z-index          (calculate-record-z-index grid-state column-kw)
+      :z-index          (calculate-row-z-index grid-state column-kw)
       :position         :relative}
      (when (sticky-column? grid-state column-kw)
        {:background-color "#f6f6f6"})
@@ -457,8 +457,8 @@
                                        :let [render-column-fn (:render-column-fn config)
                                              k                (tily/format "grid-%s-%s-%s" id (:system/id @row) column-kw)]]
                                    (if render-column-fn
-                                     ^{:key k} [render-column-fn column-kw row grid-state (record-style grid-state column-kw config)]
-                                     ^{:key k} [default-column-render column-kw row grid-state (record-style grid-state column-kw config)]))))
+                                     ^{:key k} [render-column-fn column-kw row grid-state (row-style grid-state column-kw config)]
+                                     ^{:key k} [default-column-render column-kw row grid-state (row-style grid-state column-kw config)]))))
         row-div         (fn [i row]
                           (let [style {:display :table-row}
                                 style (if (tily/is-contained? i :in @selected-rows)
