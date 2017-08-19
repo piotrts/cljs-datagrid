@@ -107,7 +107,7 @@
 
 (defn update-left-margins [grid-state scroll-left]
   (swap! grid-state assoc :columns-config
-         (mapv (fn [[column-kw column-config :as column] left-margin]
+         (mapv (fn [column left-margin]
                  (assoc-in column [1 :left-margin] left-margin))
                (:columns-config @grid-state)
                (calculate-left-margins grid-state scroll-left))))
@@ -144,34 +144,32 @@
 
 (defn- column-header-style [grid-state column-kw column-config]
   (let [column-width (get-column-width column-kw grid-state)]
-    (merge
-     common-column-style
-     {:display       :table-cell
-      :width         column-width
-      :min-width     column-width
-      :max-width     column-width
-      :z-index       (calculate-column-z-index grid-state column-kw)
-      :position      :relative}
-     (when (sticky-column? grid-state column-kw)
-       {:background-color :gray})
-     (when (not= 0 (:left-margin column-config))
-       {:left (:left-margin column-config)}))))
+    (merge common-column-style
+           {:display       :table-cell
+            :width         column-width
+            :min-width     column-width
+            :max-width     column-width
+            :z-index       (calculate-column-z-index grid-state column-kw)
+            :position      :relative}
+           (when (sticky-column? grid-state column-kw)
+             {:background-color :gray})
+           (when (:left-margin column-config)
+             {:left (:left-margin column-config)}))))
 
 (defn- row-style [grid-state column-kw column-config]
   (let [column-width (get-column-width column-kw grid-state)]
-    (merge
-     common-column-style
-     {:display          :table-cell
-      :width            column-width
-      :min-width        column-width
-      :max-width        column-width
-      :background-color "#fff"
-      :z-index          (calculate-row-z-index grid-state column-kw)
-      :position         :relative}
-     (when (sticky-column? grid-state column-kw)
-       {:background-color "#f6f6f6"})
-     (when (not= 0 (:left-margin column-config))
-       {:left (:left-margin column-config)}))))
+    (merge common-column-style
+           {:display          :table-cell
+            :width            column-width
+            :min-width        column-width
+            :max-width        column-width
+            :background-color "#fff"
+            :z-index          (calculate-row-z-index grid-state column-kw)
+            :position         :relative}
+           (when (sticky-column? grid-state column-kw)
+             {:background-color "#f6f6f6"})
+           (when (:left-margin column-config)
+             {:left (:left-margin column-config)}))))
 
 (defn- sticky-column-headers-foundation
   "Creates a div that is placed underneath sticky column headers"
@@ -276,14 +274,13 @@
      (left-corner-block grid-state left-corner-block-style)
      (data-column-headers grid-state)]))
 
-(defn- default-column-render [column-kw row grid-state state]
+(defn- default-column-render [column-kw row grid-state]
   (let [id           (-> @grid-state :id)
         column-width (get-column-width column-kw grid-state)
         style        (merge {:width     column-width
                              :min-width column-width
                              :max-width column-width}
-                            common-column-style
-                            state)
+                            common-column-style)
         value        (str (column-kw @row))
         unique       (-> (get-column-config grid-state column-kw) :unique)
         local-save (fn [evt]
@@ -456,9 +453,11 @@
                                        :when (:visible? config)
                                        :let [render-column-fn (:render-column-fn config)
                                              k                (tily/format "grid-%s-%s-%s" id (:system/id @row) column-kw)]]
-                                   (if render-column-fn
-                                     ^{:key k} [render-column-fn column-kw row grid-state (row-style grid-state column-kw config)]
-                                     ^{:key k} [default-column-render column-kw row grid-state (row-style grid-state column-kw config)]))))
+                                   [:div {:key k
+                                          :style (row-style grid-state column-kw config)}
+                                     (if render-column-fn
+                                       [render-column-fn column-kw row grid-state]
+                                       [default-column-render column-kw row grid-state])])))
         row-div         (fn [i row]
                           (let [style {:display :table-row}
                                 style (if (tily/is-contained? i :in @selected-rows)
@@ -483,8 +482,8 @@
                          (when on-expand 
                            [:div {:style (when-not (tily/is-contained? i :in @expanded-rows)
                                            {:display :none})} 
-                            (on-expand row)])
-                         ]))]))
+                            (on-expand row)])]))]))
+
 
 (defn- context-menu [grid-state]
   (let [content    (-> @grid-state :context-menu :content)
